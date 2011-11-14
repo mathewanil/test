@@ -38,15 +38,18 @@ public class GallerySampleActivity extends Activity {
 
 		gridview.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-
+				applyRotation(0, -90, v);
+/*
 				ViewFlipper viewFlipper = (ViewFlipper) v.findViewById(R.id.viewFlipper1);
 				if (viewFlipper.getDisplayedChild() == 1) {
 					//Intent i = new Intent(getApplicationContext(), GalleryDetailsView.class);
 					//startActivity(i);
-					applyRotation(0, -90, v);
-				} else
-					applyRotation(0, -180, v);
+					//applyRotation(0, -90, v);
+				} else {
+					//applyRotation(0, -180, v);
+				}
 
+*/
 			}
 		});
 

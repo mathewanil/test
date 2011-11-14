@@ -21,6 +21,7 @@ public final class DisplayNextView implements Animation.AnimationListener {
 	public void onAnimationEnd(Animation animation) {
 		ViewFlipper viewFlipper = (ViewFlipper) mCurrentView.findViewById(R.id.viewFlipper1);
 		viewFlipper.showNext();
+/*
 		ImageView image1 = (ImageView) mCurrentView.findViewById(R.id.FrontImageView);
 		final float centerX = image1.getWidth() / 2.0f;
 		final float centerY = image1.getHeight() / 2.0f;
@@ -31,6 +32,7 @@ public final class DisplayNextView implements Animation.AnimationListener {
 		rotation.setFillAfter(true);
 		rotation.setInterpolator(new DecelerateInterpolator());
 		mCurrentView.startAnimation(rotation);
+*/
 	}
 
 	public void onAnimationRepeat(Animation animation) {
