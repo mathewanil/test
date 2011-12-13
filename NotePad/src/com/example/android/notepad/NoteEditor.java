@@ -64,6 +64,7 @@ public class NoteEditor extends Activity {
     };
 
     // A label for the saved state of the activity
+    // Another comment
     private static final String ORIGINAL_CONTENT = "origContent";
 
     // This Activity can be started by more than one action. Each action is represented
