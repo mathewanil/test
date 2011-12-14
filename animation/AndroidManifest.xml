@@ -16,6 +16,5 @@
         <activity android:name=".GalleryDetailsView"
                   android:label="@string/app_name">
         </activity>
-<!-- Some comment -->
     </application>
 </manifest>
