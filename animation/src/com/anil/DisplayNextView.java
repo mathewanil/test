@@ -15,6 +15,7 @@ public final class DisplayNextView implements Animation.AnimationListener {
 	}
 
 	// something
+	//something else
 	public void onAnimationStart(Animation animation) {
 	}
 
