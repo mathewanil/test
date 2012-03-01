@@ -13,7 +13,7 @@ public class WebViewActivity extends Activity {
         setContentView(R.layout.webview_1);
         
         final String mimeType = "text/html";
-        final String encoding = "utf-8";
+        //final String encoding = "utf-8";
         
         WebView wv;
         
