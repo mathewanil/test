@@ -8,7 +8,6 @@ public class WebViewActivity extends Activity {
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        WebView.enablePlatformNotifications();
         
         setContentView(R.layout.webview_1);
         
@@ -18,9 +17,10 @@ public class WebViewActivity extends Activity {
         WebView wv;
         
         wv = (WebView) findViewById(R.id.wv1);
+        wv.getSettings().setJavaScriptEnabled(true);
         //wv.loadData("<a href='x'>Hello World! - 1</a>", mimeType, encoding);
-        //wv.loadUrl("http://vexflow.com/");
-        wv.loadUrl("http://www.google.com");
+        wv.loadUrl("http://vexflow.com/");
+        //wv.loadUrl("http://www.google.com");
         
         
     }
