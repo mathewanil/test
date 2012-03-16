@@ -16,175 +16,104 @@
 
 package com.online;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.http.AndroidHttpClient;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.util.Log;
-import android.widget.ImageView;
-
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.InputStreamReader;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.util.Log;
 
 /**
- * This helper class download images from the Internet and binds those with the provided ImageView.
- *
- * <p>It requires the INTERNET permission, which should be added to your application's manifest
- * file.</p>
- *
- * A local cache of downloaded images is maintained internally to improve performance.
+ * This helper class download images from the Internet and binds those with the
+ * provided ImageView.
+ * 
+ * <p>
+ * It requires the INTERNET permission, which should be added to your
+ * application's manifest file.
+ * </p>
+ * 
+ * A local cache of downloaded images is maintained internally to improve
+ * performance.
  */
 public class WebService {
-    private static final String LOG_TAG = "WebService";
+	private static final String LOG_TAG = "WebService";
 
+	/**
+	 * The actual AsyncTask
+	 */
+	class WebServiceTask extends AsyncTask<String, Void, Bitmap> {
 
+		public WebServiceTask() {
+		}
 
-    /**
-     * @param imageView Any imageView
-     * @return Retrieve the currently active download task (if any) associated with this imageView.
-     * null if there is no such task.
-     */
-    private static BitmapDownloaderTask getBitmapDownloaderTask(ImageView imageView) {
-        if (imageView != null) {
-            Drawable drawable = imageView.getDrawable();
-            if (drawable instanceof DownloadedDrawable) {
-                DownloadedDrawable downloadedDrawable = (DownloadedDrawable)drawable;
-                return downloadedDrawable.getBitmapDownloaderTask();
-            }
-        }
-        return null;
-    }
+		/**
+		 * Actual download method.
+		 */
+		@Override
+		protected Bitmap doInBackground(String... params) {
+			String readTwitterFeed = readTwitterFeed();
+			try {
+				JSONArray jsonArray = new JSONArray(readTwitterFeed);
+				Log.i(LOG_TAG, "Number of entries " + jsonArray.length());
+				for (int i = 0; i < jsonArray.length(); i++) {
+					JSONObject jsonObject = jsonArray.getJSONObject(i);
+					Log.i(LOG_TAG, jsonObject.getString("text"));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
-    /**
-     * The actual AsyncTask 
-     */
-    class WebServiceTask extends AsyncTask<String, Void, Bitmap> {
-        private static final int IO_BUFFER_SIZE = 4 * 1024;
-        private String url;
-        private final WeakReference<ImageView> imageViewReference;
+			return null;
+		}
 
-        public BitmapDownloaderTask(ImageView imageView) {
-            imageViewReference = new WeakReference<ImageView>(imageView);
-        }
+		/**
+		 * Once the image is downloaded, associates it to the imageView
+		 */
+		@Override
+		protected void onPostExecute(Bitmap bitmap) {
+		}
 
-        /**
-         * Actual download method.
-         */
-        @Override
-        protected Bitmap doInBackground(String... params) {
-            final AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
-            url = params[0];
-            final HttpGet getRequest = new HttpGet(url);
-            String cookie = params[1];
-            if (cookie != null) {
-                getRequest.setHeader("cookie", cookie);
-            }
-
-            try {
-                HttpResponse response = client.execute(getRequest);
-                final int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode != HttpStatus.SC_OK) {
-                    Log.w("ImageDownloader", "Error " + statusCode +
-                            " while retrieving bitmap from " + url);
-                    return null;
-                }
-
-                final HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    InputStream inputStream = null;
-                    OutputStream outputStream = null;
-                    try {
-                        inputStream = entity.getContent();
-                        final ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
-                        outputStream = new BufferedOutputStream(dataStream, IO_BUFFER_SIZE);
-                        copy(inputStream, outputStream);
-                        outputStream.flush();
-
-                        final byte[] data = dataStream.toByteArray();
-                        final Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-
-                        // FIXME : Should use BitmapFactory.decodeStream(inputStream) instead.
-                        //final Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-
-                        return bitmap;
-
-                    } finally {
-                        if (inputStream != null) {
-                            inputStream.close();
-                        }
-                        if (outputStream != null) {
-                            outputStream.close();
-                        }
-                        entity.consumeContent();
-                    }
-                }
-            } catch (IOException e) {
-                getRequest.abort();
-                Log.w(LOG_TAG, "I/O error while retrieving bitmap from " + url, e);
-            } catch (IllegalStateException e) {
-                getRequest.abort();
-                Log.w(LOG_TAG, "Incorrect URL: " + url);
-            } catch (Exception e) {
-                getRequest.abort();
-                Log.w(LOG_TAG, "Error while retrieving bitmap from " + url, e);
-            } finally {
-                if (client != null) {
-                    client.close();
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Once the image is downloaded, associates it to the imageView
-         */
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (isCancelled()) {
-                bitmap = null;
-            }
-
-            // Add bitmap to cache
-            if (bitmap != null) {
-                synchronized (sHardBitmapCache) {
-                    sHardBitmapCache.put(url, bitmap);
-                }
-            }
-
-            if (imageViewReference != null) {
-                ImageView imageView = imageViewReference.get();
-                BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
-                // Change bitmap only if this process is still associated with it
-                if (this == bitmapDownloaderTask) {
-                    imageView.setImageBitmap(bitmap);
-                }
-            }
-        }
-
-        public void copy(InputStream in, OutputStream out) throws IOException {
-            byte[] b = new byte[IO_BUFFER_SIZE];
-            int read;
-            while ((read = in.read(b)) != -1) {
-                out.write(b, 0, read);
-            }
-        }
-    }
+		private String readTwitterFeed() {
+			StringBuilder builder = new StringBuilder();
+			HttpClient client = new DefaultHttpClient();
+			HttpGet httpGet = new HttpGet(
+					"http://twitter.com/statuses/user_timeline/vogella.json");
+			try {
+				HttpResponse response = client.execute(httpGet);
+				StatusLine statusLine = response.getStatusLine();
+				int statusCode = statusLine.getStatusCode();
+				if (statusCode == 200) {
+					HttpEntity entity = response.getEntity();
+					InputStream content = entity.getContent();
+					BufferedReader reader = new BufferedReader(
+							new InputStreamReader(content));
+					String line;
+					while ((line = reader.readLine()) != null) {
+						builder.append(line);
+					}
+				} else {
+					// Log.e(ParseJSON.class.toString(),
+					// "Failed to download file");
+				}
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return builder.toString();
+		}
+	}
 
 }
