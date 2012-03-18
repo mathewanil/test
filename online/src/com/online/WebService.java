@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2010 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.online;
 
 import java.io.BufferedReader;
@@ -30,7 +14,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.os.AsyncTask;
@@ -38,13 +21,16 @@ import android.util.Log;
 
 /**
  */
-public class WebService extends AsyncTask<String, Void, Void> {
+public class WebService extends AsyncTask<String, Void, JSONObject> {
 	private static final String LOG_TAG = "WebService";
-	
-	public TreeMap<String, String> queryParams = new TreeMap<String, String>();
-	
-	private String getQueryString(boolean urlEncode)
-	{
+
+	private TreeMap<String, String> queryParams = new TreeMap<String, String>();
+
+	public void setQueryParam(String key, String value) {
+		queryParams.put(key, value);
+	}
+
+	private String getQueryString(boolean urlEncode) {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -55,24 +41,23 @@ public class WebService extends AsyncTask<String, Void, Void> {
 		}
 		return sb.toString();
 	}
+
 	/**
 	 * Actual download method.
 	 */
 	@Override
-	protected Void doInBackground(String... params) {
-		
-		queryParams.put("method", "auth.getVoidSession");
-		queryParams.put("api_key", "android_json_ght");
+	protected JSONObject doInBackground(String... params) {
+
+		queryParams.put("method", params[0]);
+		queryParams.put("api_key", "android_json_ght"); // TODO - property file
 		queryParams.put("call_id", String.valueOf(System.currentTimeMillis()));
-		String url = "http://onlinepizza.se/api/1.3/rest?";
-		
-		try
-		{
+		String url = "http://onlinepizza.se/api/1.3/rest?"; // TODO - property file
+
+		try {
 
 			String response = call(url + getQueryString(true) + "sig=" + sig(getQueryString(false)));
-			JSONObject jsonObject = new JSONObject(response);
-			Log.i(LOG_TAG, jsonObject.toString());
 			Log.i(LOG_TAG, response);
+			return new JSONObject(response);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -80,34 +65,27 @@ public class WebService extends AsyncTask<String, Void, Void> {
 		return null;
 	}
 
-	private String sig(String q) throws Exception
-	{
+	protected void onPostExecute(JSONObject jsonObject) {
+	}
+
+	private String sig(String q) throws Exception {
 		String s = q + "q3FnWEUS7";
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		md.reset();
 		md.update(s.getBytes());
 		byte messageDigest[] = md.digest();
-	            
+
 		StringBuffer hexString = new StringBuffer();
-		for (int i=0;i<messageDigest.length;i++) {
-			hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+		for (int i = 0; i < messageDigest.length; i++) {
+			String h = Integer.toHexString(0xFF & messageDigest[i]);
+			while (h.length() < 2)
+				h = "0" + h;
+			hexString.append(h);
 		}
-		
+
 		return hexString.toString();
 	}
-	private void print(JSONArray jsonArray)
-	{
-		try {
-			Log.i(LOG_TAG, "Number of entries " + jsonArray.length());
-			for (int i = 0; i < jsonArray.length(); i++) {
-				JSONObject jsonObject = jsonArray.getJSONObject(i);
-				Log.i(LOG_TAG, jsonObject.getString("text"));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-	}
+
 	/**
 	 * 
 	 */

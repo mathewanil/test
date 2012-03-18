@@ -11,7 +11,7 @@ public class OnlineActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         WebService ws  = new WebService() ;
-        ws.execute();
+        ws.execute("auth.getVoidSession");
         
     }
 }
