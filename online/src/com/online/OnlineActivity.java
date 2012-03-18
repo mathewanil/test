@@ -10,5 +10,8 @@ public class OnlineActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        WebService ws  = new WebService() ;
+        ws.execute();
+        
     }
 }
