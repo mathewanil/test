@@ -56,7 +56,7 @@ public class WebService extends AsyncTask<String, Void, JSONObject> {
 		try {
 
 			String response = call(url + getQueryString(true) + "sig=" + sig(getQueryString(false)));
-			Log.i(LOG_TAG, response);
+			//Log.i(LOG_TAG, response);
 			return new JSONObject(response);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -91,7 +91,7 @@ public class WebService extends AsyncTask<String, Void, JSONObject> {
 	 */
 
 	private String call(String url) {
-		Log.i(LOG_TAG, url);
+		Log.d(LOG_TAG, url);
 		StringBuilder builder = new StringBuilder();
 		HttpClient client = new DefaultHttpClient();
 		HttpGet httpGet = new HttpGet(url);
