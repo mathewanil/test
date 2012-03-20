@@ -1,5 +1,6 @@
 package com.online.test;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.test.AndroidTestCase;
@@ -93,8 +94,11 @@ public class WebServiceTest extends AndroidTestCase {
 		assertStatusOK();
 		try {
 			JSONObject jsonObject = ws.get();
-			Log.i(LOG_TAG, jsonObject.toString(2));
-			String name = jsonObject.getJSONObject("restaurants").getJSONArray("restaurant").getJSONObject(0).getJSONObject("@attributes").getString("name");
+			//Log.i(LOG_TAG, jsonObject.toString(2));
+			Object resObj = jsonObject.getJSONObject("restaurants").get("restaurant") ;
+			JSONObject res = (resObj instanceof JSONObject ? (JSONObject)resObj : ((JSONArray)resObj).getJSONObject(0));
+			
+			String name = res.getJSONObject("@attributes").getString("name");
 			Log.i(LOG_TAG, name);
 			assertEquals("Demorestaurang", name);
 			
@@ -113,7 +117,10 @@ public class WebServiceTest extends AndroidTestCase {
 		try {
 			JSONObject jsonObject = ws.get();
 			//Log.i(LOG_TAG, jsonObject.toString(2));
-			String name = jsonObject.getJSONObject("restaurants").getJSONArray("restaurant").getJSONObject(0).getJSONObject("@attributes").getString("name");
+			Object resObj = jsonObject.getJSONObject("restaurants").get("restaurant") ;
+			JSONObject res = (resObj instanceof JSONObject ? (JSONObject)resObj : ((JSONArray)resObj).getJSONObject(0));
+			
+			String name = res.getJSONObject("@attributes").getString("name");
 			Log.i(LOG_TAG, name);
 			assertEquals("Demorestaurang", name);
 			
