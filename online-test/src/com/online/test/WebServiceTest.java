@@ -33,7 +33,7 @@ public class WebServiceTest extends AndroidTestCase {
 	private void assertStatusOK() {
 		try {
 			JSONObject jsonObject = ws.get();
-			assertEquals("ok", jsonObject.getJSONObject("@attributes").get("status"));
+			assertEquals(jsonObject.toString(), "ok", jsonObject.getJSONObject("@attributes").get("status"));
 		} catch (Exception e) {
 			assertTrue(e.getMessage(), false);
 		}
@@ -144,4 +144,46 @@ public class WebServiceTest extends AndroidTestCase {
 	
 	}
 	
+	public void test_restaurant_getMenu() {
+		setSession();
+		ws.setQueryParam("restaurant_id", "1999");
+		ws.execute("restaurant.getMenu");
+		assertStatusOK();
+		try {
+			JSONObject jsonObject = ws.get();
+			assertTrue(jsonObject.getJSONObject("restaurant").
+					getJSONObject("menu").getJSONObject("sections").
+					getJSONArray("section").length() > 0) ;
+		} catch (Exception e) {
+			assertTrue(e.getMessage(), false);
+		}
+	
+	}
+	public void test_restaurant_getDeliveryConditions() {
+		setSession();
+		ws.setQueryParam("restaurant_id", "1999");
+		ws.execute("restaurant.getDeliveryConditions");
+		assertStatusOK();
+		try {
+			JSONObject jsonObject = ws.get();
+			assertTrue(jsonObject.getJSONObject("delivery").getJSONArray("deliveryArea").length() > 0) ;
+		} catch (Exception e) {
+			assertTrue(e.getMessage(), false);
+		}
+	
+	}
+	public void test_restaurant_getDeliveryConditionsByZipcode() {
+		setSession();
+		ws.setQueryParam("restaurant_id", "1999");
+		ws.setQueryParam("zipcode", "12345");
+		ws.execute("restaurant.getDeliveryConditionsByZipcode");
+		assertStatusOK();
+		try {
+			JSONObject jsonObject = ws.get();
+			assertNotNull(jsonObject.toString(), jsonObject.getJSONObject("delivery"));
+		} catch (Exception e) {
+			assertTrue(e.getMessage(), false);
+		}
+	
+	}
 }
