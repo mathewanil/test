@@ -1,6 +1,7 @@
 package com.online.test;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.test.AndroidTestCase;
@@ -12,6 +13,12 @@ public class WebServiceTest extends AndroidTestCase {
 	private final static String LOG_TAG = "WebServiceTest";
 	WebService ws;
 
+	private String getFirstRestaurantsName(JSONObject jsonObject) throws JSONException
+	{
+		Object resObj = jsonObject.getJSONObject("restaurants").get("restaurant") ;
+		JSONObject res = (resObj instanceof JSONObject ? (JSONObject)resObj : ((JSONArray)resObj).getJSONObject(0));
+		return res.getJSONObject("@attributes").getString("name");		
+	}
 	private void setSession() {
 		try {
 			WebService wss = new WebService();
@@ -93,15 +100,7 @@ public class WebServiceTest extends AndroidTestCase {
 		ws.execute("library.getRestaurantsByCountryCodeAndZipcode");
 		assertStatusOK();
 		try {
-			JSONObject jsonObject = ws.get();
-			//Log.i(LOG_TAG, jsonObject.toString(2));
-			Object resObj = jsonObject.getJSONObject("restaurants").get("restaurant") ;
-			JSONObject res = (resObj instanceof JSONObject ? (JSONObject)resObj : ((JSONArray)resObj).getJSONObject(0));
-			
-			String name = res.getJSONObject("@attributes").getString("name");
-			Log.i(LOG_TAG, name);
-			assertEquals("Demorestaurang", name);
-			
+			assertEquals("Demorestaurang", getFirstRestaurantsName(ws.get()));
 		} catch (Exception e) {
 			assertTrue(e.getMessage(), false);
 		}
@@ -115,18 +114,34 @@ public class WebServiceTest extends AndroidTestCase {
 		ws.execute("library.getRestaurantsByCountryCodeAndCity");
 		assertStatusOK();
 		try {
-			JSONObject jsonObject = ws.get();
-			//Log.i(LOG_TAG, jsonObject.toString(2));
-			Object resObj = jsonObject.getJSONObject("restaurants").get("restaurant") ;
-			JSONObject res = (resObj instanceof JSONObject ? (JSONObject)resObj : ((JSONArray)resObj).getJSONObject(0));
-			
-			String name = res.getJSONObject("@attributes").getString("name");
-			Log.i(LOG_TAG, name);
-			assertEquals("Demorestaurang", name);
-			
+			assertEquals("Demorestaurang", getFirstRestaurantsName(ws.get()));
 		} catch (Exception e) {
 			assertTrue(e.getMessage(), false);
 		}
 		
 	}
+
+	public void test_library_getRestaurantsByCoordinates() {
+		setSession();
+		ws.setQueryParam("latitude", "59.339343");
+		ws.setQueryParam("longitude", "18.009206");
+		ws.setQueryParam("max_distance", "100");
+		ws.execute("library.getRestaurantsByCoordinates");
+		assertStatusOK();
+		try {
+			assertEquals("Kebab House", getFirstRestaurantsName(ws.get()));
+		} catch (Exception e) {
+			assertTrue(e.getMessage(), false);
+		}
+		
+	}
+
+	public void test_library_getOpinionsByRestaurantId() {
+		setSession();
+		ws.setQueryParam("restaurant_id", "1999");
+		ws.execute("library.getOpinionsByRestaurantId");
+		assertStatusOK();
+	
+	}
+	
 }
