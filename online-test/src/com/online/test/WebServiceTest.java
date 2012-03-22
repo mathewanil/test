@@ -186,4 +186,19 @@ public class WebServiceTest extends AndroidTestCase {
 		}
 	
 	}
+
+	public void test_restaurant_getModificationDataByIDProduct() {
+		setSession();
+		ws.setQueryParam("product_id", "70488");
+		ws.execute("restaurant.getModificationDataByIDProduct");
+		assertStatusOK();
+		try {
+			JSONObject jsonObject = ws.get();
+			assertNotNull(jsonObject.toString(), jsonObject.getJSONObject("category"));
+		} catch (Exception e) {
+			assertTrue(e.getMessage(), false);
+		}
+	
+	}
+
 }
