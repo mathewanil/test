@@ -11,23 +11,13 @@ import com.online.WebService;
 
 public class WebServiceTest extends AndroidTestCase {
 	private final static String LOG_TAG = "WebServiceTest";
-	//WebService ws;
+	String sessionKey ;
 
 	private String getFirstRestaurantsName(JSONObject jsonObject) throws JSONException
 	{
 		Object resObj = jsonObject.getJSONObject("restaurants").get("restaurant") ;
 		JSONObject res = (resObj instanceof JSONObject ? (JSONObject)resObj : ((JSONArray)resObj).getJSONObject(0));
 		return res.getJSONObject("@attributes").getString("name");		
-	}
-	private void setSession(WebService ws) {
-		try {
-			WebService wss = new WebService();
-			wss.execute("auth.getVoidSession");
-			String sessionKey = wss.get().getString("session_key");
-			
-			ws.setQueryParam("session_key", sessionKey);
-		} catch (Exception e) {
-		}
 	}
 
 	private void assertStatusOK(WebService ws) {
@@ -39,7 +29,12 @@ public class WebServiceTest extends AndroidTestCase {
 		}
 	}
 
-	protected void setUp() {
+	protected void setUp() throws Exception {
+		super.setUp();
+		WebService ws = new WebService();
+		ws.execute("auth.getVoidSession");
+		sessionKey = ws.get().getString("session_key");
+		
 	}
 
 	public void test_auth_getVoidSession() {
@@ -50,14 +45,14 @@ public class WebServiceTest extends AndroidTestCase {
 
 	public void test_auth_getLatestCallId() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.execute("auth.getLatestCallId");
 		assertStatusOK(ws);
 	}
 
 	public void test_server_getDayAndTime() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("country_code", "SE");
 		ws.execute("server.getDayAndTime");
 		assertStatusOK(ws);
@@ -65,7 +60,7 @@ public class WebServiceTest extends AndroidTestCase {
 
 	public void test_library_getZipcodeByCoordinates() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("latitude", "59.339343");
 		ws.setQueryParam("longitude", "18.009206");
 		ws.execute("library.getZipcodeByCoordinates");
@@ -82,7 +77,7 @@ public class WebServiceTest extends AndroidTestCase {
 
 	public void test_library_getStreets() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("country_code", "SE");
 		ws.setQueryParam("search_string", "Sad");
 		ws.setQueryParam("limit", "1");
@@ -99,7 +94,7 @@ public class WebServiceTest extends AndroidTestCase {
 	
 	public void test_library_getRestaurantsByCountryCodeAndZipcode() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("country_code", "SE");
 		ws.setQueryParam("zipcode", "12345");
 		ws.execute("library.getRestaurantsByCountryCodeAndZipcode");
@@ -114,7 +109,7 @@ public class WebServiceTest extends AndroidTestCase {
 	
 	public void test_library_getRestaurantsByCountryCodeAndCity() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("country_code", "SE");
 		ws.setQueryParam("city", "Teststad");
 		ws.execute("library.getRestaurantsByCountryCodeAndCity");
@@ -129,7 +124,7 @@ public class WebServiceTest extends AndroidTestCase {
 
 	public void test_library_getRestaurantsByCoordinates() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("latitude", "59.339343");
 		ws.setQueryParam("longitude", "18.009206");
 		ws.setQueryParam("max_distance", "100");
@@ -145,7 +140,7 @@ public class WebServiceTest extends AndroidTestCase {
 
 	public void test_library_getOpinionsByRestaurantId() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("restaurant_id", "1999");
 		ws.execute("library.getOpinionsByRestaurantId");
 		assertStatusOK(ws);
@@ -154,7 +149,7 @@ public class WebServiceTest extends AndroidTestCase {
 	
 	public void test_restaurant_getMenu() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("restaurant_id", "1999");
 		ws.execute("restaurant.getMenu");
 		assertStatusOK(ws);
@@ -170,7 +165,7 @@ public class WebServiceTest extends AndroidTestCase {
 	}
 	public void test_restaurant_getDeliveryConditions() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("restaurant_id", "1999");
 		ws.execute("restaurant.getDeliveryConditions");
 		assertStatusOK(ws);
@@ -184,7 +179,7 @@ public class WebServiceTest extends AndroidTestCase {
 	}
 	public void test_restaurant_getDeliveryConditionsByZipcode() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("restaurant_id", "1999");
 		ws.setQueryParam("zipcode", "12345");
 		ws.execute("restaurant.getDeliveryConditionsByZipcode");
@@ -200,12 +195,13 @@ public class WebServiceTest extends AndroidTestCase {
 
 	public void test_restaurant_getModificationDataByIDProduct() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("product_id", "70488");
 		ws.execute("restaurant.getModificationDataByIDProduct");
 		assertStatusOK(ws);
 		try {
 			JSONObject jsonObject = ws.get();
+			Log.i(LOG_TAG, jsonObject.toString());
 			assertNotNull(jsonObject.toString(), jsonObject.getJSONObject("category"));
 		} catch (Exception e) {
 			assertTrue(e.getMessage(), false);
@@ -214,20 +210,79 @@ public class WebServiceTest extends AndroidTestCase {
 	}
 	public void test_cart_add() {
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("product_id", "70488");
 		ws.execute("cart.add");
 		assertStatusOK(ws);
 	}
 
 	public void test_cart_show() {
+		test_cart_add();
 		WebService ws = new WebService();
-		setSession(ws);
+		ws.setQueryParam("session_key", sessionKey);
 		ws.execute("cart.show");
 		try
 		{
 			Log.i(LOG_TAG, ws.get().toString());
 		} catch (Exception e) {}
+		assertStatusOK(ws);
+	}
+
+	public void test_cart_showItem() {
+		test_cart_add();
+		WebService ws = new WebService();
+		ws.setQueryParam("session_key", sessionKey);
+		ws.setQueryParam("idx", "0");
+		ws.execute("cart.showItem");
+		assertStatusOK(ws);
+	}
+
+	public void test_cart_modifyItem() {
+		test_cart_add();
+		WebService ws = new WebService();
+		ws.setQueryParam("session_key", sessionKey);
+		ws.setQueryParam("idx", "0");
+		ws.setQueryParam("selectedIngr[0]", "14894");
+		ws.setQueryParam("selectedIngr[1]", "14895");
+		
+		ws.execute("cart.modifyItem");
+		assertStatusOK(ws);
+	}
+
+	public void test_cart_remove() {
+		test_cart_add();
+		WebService ws = new WebService();
+		ws.setQueryParam("session_key", sessionKey);
+		ws.setQueryParam("idx", "0");
+		ws.execute("cart.remove");
+		assertStatusOK(ws);
+	}
+
+	public void test_cart_clean() {
+		test_cart_add();
+		WebService ws = new WebService();
+		ws.setQueryParam("session_key", sessionKey);
+		ws.execute("cart.clean");
+		assertStatusOK(ws);
+	}
+	
+	public void test_cart_update() {
+		test_cart_add();
+		WebService ws = new WebService();
+		ws.setQueryParam("session_key", sessionKey);
+		ws.setQueryParam("customer[name]", "name");
+		ws.setQueryParam("customer[phone]", "555-5555");
+		ws.setQueryParam("customer[email]", "email@email.com");
+		ws.setQueryParam("customer[delivery_address][address]", "address");
+		ws.setQueryParam("customer[delivery_address][entrance_code]", "1");
+		ws.setQueryParam("customer[delivery_address][floor]", "1");
+		ws.setQueryParam("customer[delivery_address][apartment]", "1");
+		ws.setQueryParam("customer[delivery_address][zipcode]", "12345");
+		ws.setQueryParam("customer[delivery_address][country]", "SE");
+		ws.setQueryParam("transport[type]", "delivery");
+		ws.setQueryParam("payment[method]", "cash");
+		ws.setQueryParam("message", "message");
+		ws.execute("cart.update");
 		assertStatusOK(ws);
 	}
 }
