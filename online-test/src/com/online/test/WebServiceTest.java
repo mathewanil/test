@@ -12,6 +12,7 @@ import com.online.WebService;
 public class WebServiceTest extends AndroidTestCase {
 	private final static String LOG_TAG = "WebServiceTest";
 	String sessionKey ;
+	String orderId ;
 
 	private String getFirstRestaurantsName(JSONObject jsonObject) throws JSONException
 	{
@@ -292,12 +293,20 @@ public class WebServiceTest extends AndroidTestCase {
 		WebService ws = new WebService();
 		ws.setQueryParam("session_key", sessionKey);
 		ws.execute("order.send");
+		try
+		{
+			JSONObject jsonObject = ws.get();
+			orderId = jsonObject.getJSONObject("order").getJSONObject("@attributes").getString("id");
+		} catch (Exception e){
+		}
+		
 		assertStatusOK(ws);
 	}
 	public void test_order_status() {
 		test_order_send();
 		WebService ws = new WebService();
 		ws.setQueryParam("session_key", sessionKey);
+		ws.setQueryParam("order_id", orderId);
 		ws.execute("order.status");
 		assertStatusOK(ws);
 	}
