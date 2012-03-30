@@ -271,7 +271,7 @@ public class WebServiceTest extends AndroidTestCase {
 		WebService ws = new WebService();
 		ws.setQueryParam("session_key", sessionKey);
 		ws.setQueryParam("customer[name]", "name");
-		ws.setQueryParam("customer[phone]", "555-5555");
+		ws.setQueryParam("customer[phone]", "0771-908070");
 		ws.setQueryParam("customer[email]", "email@email.com");
 		ws.setQueryParam("customer[delivery_address][address]", "address");
 		ws.setQueryParam("customer[delivery_address][entrance_code]", "1");
@@ -283,6 +283,22 @@ public class WebServiceTest extends AndroidTestCase {
 		ws.setQueryParam("payment[method]", "cash");
 		ws.setQueryParam("message", "message");
 		ws.execute("cart.update");
+		assertStatusOK(ws);
+	}
+
+	public void test_order_send() {
+		test_cart_add();
+		test_cart_update();
+		WebService ws = new WebService();
+		ws.setQueryParam("session_key", sessionKey);
+		ws.execute("order.send");
+		assertStatusOK(ws);
+	}
+	public void test_order_status() {
+		test_order_send();
+		WebService ws = new WebService();
+		ws.setQueryParam("session_key", sessionKey);
+		ws.execute("order.status");
 		assertStatusOK(ws);
 	}
 }
